@@ -1,0 +1,12 @@
+*.iml
+.idea/
+
+build/
+/app/build
+
+*.jar
+!XposedBridgeApi-54.jar
+!gradle-wrapper.jar
+.gradle/
+
+local.properties

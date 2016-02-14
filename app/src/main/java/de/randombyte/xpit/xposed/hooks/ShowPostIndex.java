@@ -1,9 +1,9 @@
-package de.randombyte.xpit.hooks;
+package de.randombyte.xpit.xposed.hooks;
 
 import android.view.View;
 import android.widget.TextView;
 
-import de.randombyte.xpit.Commons;
+import de.randombyte.xpit.xposed.Commons;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -13,12 +13,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  */
 public class ShowPostIndex extends HookProvider {
 
-    public ShowPostIndex(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        super(loadPackageParam);
-    }
-
     @Override
-    public void initHooks() {
+    public void initHooks(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        super.initHooks(loadPackageParam);
         Commons.forumPost_toView.hook(new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {

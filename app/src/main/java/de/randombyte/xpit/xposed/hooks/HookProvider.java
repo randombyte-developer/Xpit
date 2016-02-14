@@ -1,28 +1,23 @@
-package de.randombyte.xpit.hooks;
+package de.randombyte.xpit.xposed.hooks;
 
-import de.randombyte.xpit.ClassAndMethodHelper;
+import de.randombyte.xpit.xposed.ClassAndMethodHelper;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import static de.randombyte.xpit.ClassAndMethodHelper.*;
+import static de.randombyte.xpit.xposed.ClassAndMethodHelper.*;
 
 /**
  * All hooks should extend this class to initialize their hooks and get some helper methods.
  */
 public abstract class HookProvider {
 
-    protected final XC_LoadPackage.LoadPackageParam loadPackageParam;
-    private final ClassAndMethodHelper helper;
+    protected XC_LoadPackage.LoadPackageParam loadPackageParam;
+    private ClassAndMethodHelper helper;
 
-    public HookProvider(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+    public void initHooks(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         this.loadPackageParam = loadPackageParam;
         helper = new ClassAndMethodHelper(loadPackageParam.classLoader);
     }
-
-    /**
-     * Called once when the package of the target app is loaded.
-     */
-    public abstract void initHooks();
 
     //Shadows of ClassAndMethodHelper
     public final HookMethod findMethod(String className, String methodName, Class... parameterTypes) {

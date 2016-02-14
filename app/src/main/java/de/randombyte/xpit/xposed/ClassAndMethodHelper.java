@@ -1,4 +1,4 @@
-package de.randombyte.xpit;
+package de.randombyte.xpit.xposed;
 
 import java.lang.reflect.Method;
 

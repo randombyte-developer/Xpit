@@ -1,4 +1,4 @@
-package de.randombyte.xpit;
+package de.randombyte.xpit.xposed;
 
 import android.content.Context;
 import android.view.View;
@@ -16,8 +16,8 @@ public class Commons {
     public static void initCommons(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         ClassAndMethodHelper helper = new ClassAndMethodHelper(loadPackageParam.classLoader);
 
-        forumPost_toView = helper.findMethod(Constants.Classes.FORUM_POST, "toView", helper.classes(
+        forumPost_toView = helper.findMethod("de.androidpit.io.model.ForumPost", "toView", helper.classes(
                 View.class, Context.class, View.OnClickListener.class, WebViewClient.class, boolean.class,
-                boolean.class, Constants.Classes.FORUM_THREAD_ACTIVITY, int.class, int.class, int.class));
+                boolean.class, "de.androidpit.ui.forum.ForumThreadActivity", int.class, int.class, int.class));
     }
 }

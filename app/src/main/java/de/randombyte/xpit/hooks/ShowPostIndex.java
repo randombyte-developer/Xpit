@@ -20,11 +20,14 @@ public class ShowPostIndex extends HookProvider {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 int indexInThread = XposedHelpers.getIntField(param.thisObject, "iit");
+                if (indexInThread == 0) {
+                    return; //because it is the first post, it would have the index 0 which is strange
+                }
 
                 View resultView = (View) param.getResult();
                 Object viewHolder = resultView.getTag();
                 TextView authorTextView = (TextView) XposedHelpers.getObjectField(viewHolder, "info");
-                authorTextView.setText("#" + (indexInThread + 1) + " " + authorTextView.getText());
+                authorTextView.setText("#" + indexInThread + " " + authorTextView.getText());
             }
         });
     }

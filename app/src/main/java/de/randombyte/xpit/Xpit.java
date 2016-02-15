@@ -1,4 +1,4 @@
-package de.randombyte.xpit.xposed;
+package de.randombyte.xpit;
 
 import android.content.Context;
 
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import de.randombyte.xpit.xposed.hooks.HookProvider;
-import de.randombyte.xpit.xposed.hooks.ShowPostIndex;
-import de.randombyte.xpit.xposed.hooks.ShowThanksCount;
-import de.randombyte.xpit.xposed.hooks.ShowThreadAuthorInfo;
+import de.randombyte.xpit.hooks.HookProvider;
+import de.randombyte.xpit.hooks.ShowPostIndex;
+import de.randombyte.xpit.hooks.ShowThanksCount;
+import de.randombyte.xpit.hooks.ShowThreadAuthorInfo;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;

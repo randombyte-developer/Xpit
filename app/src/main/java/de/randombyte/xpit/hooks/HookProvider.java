@@ -1,10 +1,10 @@
-package de.randombyte.xpit.xposed.hooks;
+package de.randombyte.xpit.hooks;
 
-import de.randombyte.xpit.xposed.ClassAndMethodHelper;
+import de.randombyte.xpit.ClassAndMethodHelper;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import static de.randombyte.xpit.xposed.ClassAndMethodHelper.*;
+import static de.randombyte.xpit.ClassAndMethodHelper.*;
 
 /**
  * All hooks should extend this class to initialize their hooks and get some helper methods.

@@ -1,4 +1,4 @@
-package de.randombyte.xpit.xposed.hooks;
+package de.randombyte.xpit.hooks;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,8 +8,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import de.randombyte.xpit.R;
-import de.randombyte.xpit.xposed.Commons;
-import de.randombyte.xpit.xposed.Xpit;
+import de.randombyte.xpit.Commons;
+import de.randombyte.xpit.Xpit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;

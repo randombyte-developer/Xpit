@@ -1,4 +1,4 @@
-package de.randombyte.xpit.xposed;
+package de.randombyte.xpit;
 
 import android.content.Context;
 import android.view.View;

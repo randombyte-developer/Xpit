@@ -1,7 +1,6 @@
 package de.randombyte.xpit.hooks;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -21,32 +20,30 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 public class XpitSettings {
 
     public void init(XC_LoadPackage.LoadPackageParam loadPackageParam, final List<ActivatableHook> hooks) {
-        XposedHelpers.findAndHookMethod("de.androidpit.ui.SettingsFragment", loadPackageParam.classLoader,
-                "onCreate", Bundle.class, new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    XposedHelpers.findAndHookMethod(PreferenceFragment.class,
-                            "addPreferencesFromResource", int.class, new XC_MethodHook() {
-                                @Override
-                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                                    PreferenceFragment prefFragment = (PreferenceFragment) param.thisObject;
-                                    PreferenceScreen rootScreen = prefFragment.getPreferenceManager()
-                                            .createPreferenceScreen(prefFragment.getActivity());
 
-                                    PreferenceCategory category = new PreferenceCategory(prefFragment.getActivity());
+        XposedHelpers.findAndHookMethod(PreferenceFragment.class,
+                "addPreferencesFromResource", int.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        if (!param.thisObject.getClass().getName().equals("de.androidpit.ui.SettingsFragment")) {
+                            return;
+                        }
+                        PreferenceFragment prefFragment = (PreferenceFragment) param.thisObject;
+                        PreferenceScreen rootScreen = prefFragment.getPreferenceManager()
+                                .createPreferenceScreen(prefFragment.getActivity());
+
+                        PreferenceCategory category = new PreferenceCategory(prefFragment.getActivity());
                                     /* First add category to hierarchy, then add further preferences
                                     to the category because for adding something to category a preference
                                     manager is required. It will be set when the category itself is
                                     added to hierarchy. */
-                                    rootScreen.addPreference(category); //First this
-                                    category.setTitle("Xpit");
-                                    category.addPreference(createXpitScreen(prefFragment.getActivity(),
-                                            prefFragment.getPreferenceManager(), hooks)); //Then this
-                                    prefFragment.setPreferenceScreen(rootScreen);
-                                }
-                            });
-                }
-            });
+                        rootScreen.addPreference(category); //First this
+                        category.setTitle("Xpit");
+                        category.addPreference(createXpitScreen(prefFragment.getActivity(),
+                                prefFragment.getPreferenceManager(), hooks)); //Then this
+                        prefFragment.setPreferenceScreen(rootScreen);
+                    }
+                });
     }
 
     private PreferenceScreen createXpitScreen(Context targetContext, PreferenceManager prefManager, List<ActivatableHook> hooks) {

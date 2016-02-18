@@ -7,23 +7,21 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import de.randombyte.xpit.R;
 import de.randombyte.xpit.Commons;
+import de.randombyte.xpit.R;
 import de.randombyte.xpit.Xpit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Shows the number of "Thanks" given for a post.
  */
-public class ShowThanksCount extends HookProvider {
+public class ShowThanksCount extends ActivatableHook {
 
-    @Override
-    public void initHooks(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        super.initHooks(loadPackageParam);
+    public ShowThanksCount() {
+        super("thanksCount", "Danke-Anzahl", true);
 
-        Commons.forumPost_toView.hook(new XC_MethodHook() {
+        registerHook(Commons.forumPost_toView, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 //Find existing Views

@@ -6,32 +6,33 @@ import android.widget.TextView;
 import de.randombyte.xpit.Commons;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+
+import static de.randombyte.xpit.Helper.findMethod;
 
 /**
  * Adds a prefix before the author name of a post.
  */
-public class ShowThreadAuthorInfo extends HookProvider {
+public class ShowThreadAuthorInfo extends ActivatableHook {
 
-    private static final String AUTHOR_NAME_PREFIX = "[TE] "; //German for "Thread creator"
+    private static final String AUTHOR_NAME_PREFIX = "[TE] "; // German for "Thread creator"
 
     private int currentlyShownThreadAuthorId = -1;
 
-    @Override
-    public void initHooks(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        super.initHooks(loadPackageParam);
-        //Callback for Retrofit
-        findMethod("de.androidpit.ui.forum.ForumThreadActivity$5", "success",
-                classes("de.androidpit.io.model.ForumPostsThreadResponse", "retrofit.client.Response"))
-            .hook(new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Object thread = XposedHelpers.getObjectField(param.args[0], "thread");
-                    currentlyShownThreadAuthorId = XposedHelpers.getIntField(thread, "authorId");
-                }
-            });
+    public ShowThreadAuthorInfo() {
+        super("threadCreator", "TE-Hinweis", true);
 
-        Commons.forumPost_toView.hook(new XC_MethodHook() {
+        //Callback for Retrofit
+        registerHook(findMethod("de.androidpit.ui.forum.ForumThreadActivity$5", "success",
+                "de.androidpit.io.model.ForumPostsThreadResponse", "retrofit.client.Response"),
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object thread = XposedHelpers.getObjectField(param.args[0], "thread");
+                        currentlyShownThreadAuthorId = XposedHelpers.getIntField(thread, "authorId");
+                    }
+                });
+
+        registerHook(Commons.forumPost_toView, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 int postAuthorId = XposedHelpers.getIntField(param.thisObject, "authorId");

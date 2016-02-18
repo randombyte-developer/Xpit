@@ -6,22 +6,21 @@ import android.widget.TextView;
 import de.randombyte.xpit.Commons;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Shows the post index in a thread.
  */
-public class ShowPostIndex extends HookProvider {
+public class ShowPostIndex extends ActivatableHook {
 
-    @Override
-    public void initHooks(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        super.initHooks(loadPackageParam);
-        Commons.forumPost_toView.hook(new XC_MethodHook() {
+    public ShowPostIndex() {
+        super("postIndex", "Post-Nummer", true);
+
+        registerHook(Commons.forumPost_toView, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 int indexInThread = XposedHelpers.getIntField(param.thisObject, "iit");
                 if (indexInThread == 0) {
-                    return; //because it is the first post, it would have the index 0 which is strange
+                    return; //because it is the first post(index is 0), don't show index
                 }
 
                 View resultView = (View) param.getResult();

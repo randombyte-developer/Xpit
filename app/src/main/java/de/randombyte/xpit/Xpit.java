@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import de.randombyte.xpit.hooks.HookProvider;
+import de.randombyte.xpit.hooks.ActivatableHook;
 import de.randombyte.xpit.hooks.ShowPostIndex;
 import de.randombyte.xpit.hooks.ShowThanksCount;
 import de.randombyte.xpit.hooks.ShowThreadAuthorInfo;
+import de.randombyte.xpit.hooks.XpitSettings;
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -24,8 +26,7 @@ public class Xpit implements IXposedHookLoadPackage {
 
     public static Context ownContext;
 
-    List<HookProvider> hooks = new ArrayList<>(Arrays.asList(new ShowThreadAuthorInfo(),
-            new ShowPostIndex(), new ShowThanksCount()));
+    private final List<ActivatableHook> hooks = new ArrayList<>();
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
@@ -40,9 +41,13 @@ public class Xpit implements IXposedHookLoadPackage {
         Xpit.ownContext = context.createPackageContext(THIS_PACKAGE, Context.CONTEXT_IGNORE_SECURITY);
         //Thanks to theknut https://git.io/vgiku
 
-        Commons.initCommons(loadPackageParam);
-        for (HookProvider hook : hooks) {
-            hook.initHooks(loadPackageParam);
-        }
+        Helper.classLoader = loadPackageParam.classLoader;
+
+        Commons.init();
+
+        XSharedPreferences prefs = new XSharedPreferences(TARGET_PACKAGE_NAME);
+        hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount()));
+        new XpitSettings().init(loadPackageParam, hooks);
+        for (ActivatableHook hook : hooks) hook.readEnabled(prefs);
     }
 }

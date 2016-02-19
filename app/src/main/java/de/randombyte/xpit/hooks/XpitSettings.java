@@ -2,6 +2,7 @@ package de.randombyte.xpit.hooks;
 
 import android.content.Context;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -62,6 +63,10 @@ public class XpitSettings {
             });
             xpitScreen.addPreference(checkPref);
         }
+
+        ListPreference hiddenThreadsPref = new ListPreference(targetContext);
+        hiddenThreadsPref.setTitle("Ausgeblendete Threads");
+        xpitScreen.addPreference(hiddenThreadsPref);
 
         return xpitScreen;
     }

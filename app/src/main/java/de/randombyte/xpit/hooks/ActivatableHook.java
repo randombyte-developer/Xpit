@@ -1,11 +1,12 @@
 package de.randombyte.xpit.hooks;
 
+import android.content.SharedPreferences;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 
 /**
@@ -61,7 +62,7 @@ public abstract class ActivatableHook {
         updateHooks();
     }
 
-    public void readEnabled(XSharedPreferences prefs) {
+    public void readEnabled(SharedPreferences prefs) {
         this.enabled = prefs.getBoolean(prefKey, defaultValue);
         updateHooks();
     }

@@ -31,7 +31,7 @@ public class ShowThanksCount extends ActivatableHook {
                 ViewGroup buttonGroupParent = (ViewGroup) buttonGroup.getParent();
 
                 //Inflate own layout
-                RelativeLayout relativeLayout = (RelativeLayout) LayoutInflater.from(Xpit.ownContext)
+                RelativeLayout relativeLayout = (RelativeLayout) LayoutInflater.from(Xpit.OWN_CONTEXT)
                         .inflate(R.layout.thanks_number_textview, null);
                 TextView textView = (TextView) relativeLayout.findViewById(R.id.thanks_number);
                 textView.setText("Danke: " + XposedHelpers.getIntField(param.thisObject, "rating"));

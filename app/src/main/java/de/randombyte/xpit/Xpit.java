@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.randombyte.xpit.hooks.ActivatableHook;
+import de.randombyte.xpit.hooks.HideSignature;
 import de.randombyte.xpit.hooks.ShowPostIndex;
 import de.randombyte.xpit.hooks.ShowThanksCount;
 import de.randombyte.xpit.hooks.ShowThreadAuthorInfo;
@@ -46,7 +47,8 @@ public class Xpit implements IXposedHookLoadPackage {
         Commons.init();
 
         XSharedPreferences prefs = new XSharedPreferences(TARGET_PACKAGE_NAME);
-        hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount()));
+        hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount(),
+                new HideSignature()));
         new XpitSettings().init(loadPackageParam, hooks);
         for (ActivatableHook hook : hooks) hook.readEnabled(prefs);
     }

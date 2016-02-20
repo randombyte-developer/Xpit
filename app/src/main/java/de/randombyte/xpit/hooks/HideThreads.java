@@ -16,8 +16,6 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import static de.randombyte.xpit.Helper.findMethod;
-
 /**
  * Gives the ability to hide a thread via the overflow menu in a thread. Hidden threads can be showed
  * again via the settings.
@@ -32,8 +30,8 @@ public class HideThreads {
     public void init(final XC_LoadPackage.LoadPackageParam params) {
 
         //Inflate in options menu
-        XposedBridge.hookMethod(findMethod("de.androidpit.ui.forum.ForumThreadActivity", "onCreateOptionsMenu",
-                Menu.class), new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.ForumThreadActivity", params.classLoader,
+                "onCreateOptionsMenu", Menu.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Object thread = XposedHelpers.getObjectField(param.thisObject, "mThread");
@@ -59,9 +57,9 @@ public class HideThreads {
         });
 
         //Callback for Retrofit
-        XposedBridge.hookMethod(findMethod("de.androidpit.ui.forum.AbstractThreadListFragment$3",
-                "success", "de.androidpit.io.model.ForumThreadsResponse", "retrofit.client.Response"),
-                new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.AbstractThreadListFragment$3",
+                params.classLoader, "success", "de.androidpit.io.model.ForumThreadsResponse",
+                "retrofit.client.Response", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         Set<String> hiddenIdsString = Xpit.TARGET_PREFS

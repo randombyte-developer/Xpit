@@ -12,6 +12,7 @@ import de.randombyte.xpit.R;
 import de.randombyte.xpit.Xpit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Shows the number of "Thanks" given for a post.
@@ -20,7 +21,10 @@ public class ShowThanksCount extends ActivatableHook {
 
     public ShowThanksCount() {
         super("thanksCount", "Danke-Anzahl", true);
+    }
 
+    @Override
+    public void init(XC_LoadPackage.LoadPackageParam param) {
         registerHook(Commons.forumPost_toView, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {

@@ -48,15 +48,16 @@ public class Xpit implements IXposedHookLoadPackage {
         Xpit.TARGET_CONTEXT = context.createPackageContext(TARGET_PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY);
         //Thanks to theknut https://git.io/vgiku
 
-        Helper.classLoader = loadPackageParam.classLoader;
-
-        Commons.init();
+        Commons.init(loadPackageParam);
 
         TARGET_PREFS = PreferenceManager.getDefaultSharedPreferences(TARGET_CONTEXT);
         hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount(),
                 new HideSignature()));
         new XpitSettings().init(loadPackageParam, hooks);
         new HideThreads().init(loadPackageParam);
-        for (ActivatableHook hook : hooks) hook.readEnabled(TARGET_PREFS);
+        for (ActivatableHook hook : hooks) {
+            hook.init(loadPackageParam);
+            hook.readEnabled(TARGET_PREFS);
+        }
     }
 }

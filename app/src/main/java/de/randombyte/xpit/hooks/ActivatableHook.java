@@ -8,6 +8,7 @@ import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * A hook that can be en/disabled on the fly without reboot.
@@ -28,6 +29,11 @@ public abstract class ActivatableHook {
         this.defaultValue = defaultValue;
         enabled = defaultValue;
     }
+
+    /**
+     * Called once for the hook so it can do registerHook()
+     */
+    public abstract void init(XC_LoadPackage.LoadPackageParam param);
 
     /**
      * Registers a hook. You must call updateHooks() so the changes take affect.

@@ -6,6 +6,7 @@ import android.widget.TextView;
 import de.randombyte.xpit.Commons;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Shows the post index in a thread.
@@ -14,7 +15,10 @@ public class ShowPostIndex extends ActivatableHook {
 
     public ShowPostIndex() {
         super("postIndex", "Post-Nummer", true);
+    }
 
+    @Override
+    public void init(XC_LoadPackage.LoadPackageParam param) {
         registerHook(Commons.forumPost_toView, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {

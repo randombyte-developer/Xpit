@@ -5,6 +5,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,44 +63,21 @@ public class HideThreads {
                 "retrofit.client.Response", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Set<String> hiddenIdsString = Xpit.TARGET_PREFS
-                                .getStringSet(HIDDEN_THREADS_PREF_KEY, new HashSet<String>());
-                        String[] hiddenIdsStringArray = hiddenIdsString.toArray(new String[hiddenIdsString.size()]);
-                        List<Integer> hiddenIds = new ArrayList<>(hiddenIdsStringArray.length);
-                        for (String idString : hiddenIdsStringArray) {
-                            hiddenIds.add(Integer.valueOf(idString));
-                        }
-
-                        Object threadsResponse = param.args[0];
-                        Object[] threads = (Object[]) XposedHelpers.getObjectField(threadsResponse, "threads");
-
-                        //Find thread id that will definitely be shown
-                        int displayedThreadId = -1;
+                        List<Integer> hiddenThreadIds = Xpit.getHiddenThreadIds();
+                        Object[] threads = (Object[]) XposedHelpers.getObjectField(param.args[0], "threads");
+                        List filteredThreads = new ArrayList(threads.length);
                         for (Object thread : threads) {
                             int id = XposedHelpers.getIntField(thread, "id");
-                            if (!hiddenIds.contains(id)) {
-                                //Should be shown
-                                displayedThreadId = id;
-                            }
-                        }
-
-                        //Actually hide threads with magic
-                        for (int i = 0; i < threads.length; i++) {
-                            int id = XposedHelpers.getIntField(threads[i], "id");
-                            if (hiddenIds.contains(id)) {
+                            if (!hiddenThreadIds.contains(id)) {
+                                filteredThreads.add(thread);
+                            } else {
                                 XposedBridge.log("Hiding " + id);
-                                /* Set id to a thread id that will be shown, so that it will be
-                                sorted out */
-                                XposedHelpers.setIntField(threads[i], "id", displayedThreadId);
-                                /* Move this thread to the end of array so that the right thread will
-                                   be sorted out */
-                                Object swapTmp = threads[i];
-                                threads[i] = threads[threads.length - 1];
-                                threads[threads.length - 1] = swapTmp;
                             }
                         }
 
-                        XposedHelpers.setObjectField(threadsResponse, "threads", threads);
+                        XposedHelpers.setObjectField(param.args[0], "threads", filteredThreads
+                                .toArray((Object[]) Array.newInstance(threads[0].getClass(),
+                                        filteredThreads.size())));
                     }
                 });
     }

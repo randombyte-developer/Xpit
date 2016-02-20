@@ -6,7 +6,9 @@ import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import de.randombyte.xpit.hooks.ActivatableHook;
 import de.randombyte.xpit.hooks.HideSignature;
@@ -59,5 +61,19 @@ public class Xpit implements IXposedHookLoadPackage {
             hook.init(loadPackageParam);
             hook.readEnabled(TARGET_PREFS);
         }
+    }
+
+    /**
+     * Returns the thread ids that are marked by the user as hidden from the SharedPreferences.
+     */
+    public static List<Integer> getHiddenThreadIds() {
+        Set<String> idsString = Xpit.TARGET_PREFS
+                .getStringSet(HideThreads.HIDDEN_THREADS_PREF_KEY, new HashSet<String>());
+        String[] idsStringArray = idsString.toArray(new String[idsString.size()]);
+        List<Integer> ids = new ArrayList<>(idsStringArray.length);
+        for (String idString : idsStringArray) {
+            ids.add(Integer.valueOf(idString));
+        }
+        return ids;
     }
 }

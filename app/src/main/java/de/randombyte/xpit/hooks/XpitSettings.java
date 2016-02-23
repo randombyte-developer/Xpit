@@ -2,16 +2,21 @@ package de.randombyte.xpit.hooks;
 
 import android.content.Context;
 import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
+import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.widget.Toast;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import de.randombyte.xpit.Settings;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -47,7 +52,7 @@ public class XpitSettings {
                 });
     }
 
-    private PreferenceScreen createXpitScreen(Context targetContext, PreferenceManager prefManager, List<ActivatableHook> hooks) {
+    private PreferenceScreen createXpitScreen(final Context targetContext, final PreferenceManager prefManager, List<ActivatableHook> hooks) {
         PreferenceScreen xpitScreen = prefManager.createPreferenceScreen(targetContext);
         xpitScreen.setTitle("Xpit");
 
@@ -64,9 +69,49 @@ public class XpitSettings {
             xpitScreen.addPreference(checkPref);
         }
 
-        ListPreference hiddenThreadsPref = new ListPreference(targetContext);
+        //Hidden threads list
+        MultiSelectListPreference hiddenThreadsPref = new MultiSelectListPreference(targetContext);
+        hiddenThreadsPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                MultiSelectListPreference pref = (MultiSelectListPreference) preference;
+                //Prepare for dialog to be shown; doing it here to update values
+                Map<Integer, String> hiddenThreads = Settings.getHiddenThreads();
+                Integer[] ids = hiddenThreads.keySet().toArray(new Integer[hiddenThreads.keySet().size()]);
+                String[] idStrings = new String[ids.length];
+                for (int i = 0; i < idStrings.length; i++) {
+                    idStrings[i] = ids[i].toString();
+                }
+                pref.setEntryValues(idStrings);
+                pref.setEntries(hiddenThreads.values().toArray(new String[hiddenThreads.size()]));
+
+                return true;
+            }
+        });
         hiddenThreadsPref.setTitle("Ausgeblendete Threads");
-        xpitScreen.addPreference(hiddenThreadsPref);
+
+        hiddenThreadsPref.setKey(HideThreads.HIDDEN_THREADS_PREF_KEY);
+        hiddenThreadsPref.setPositiveButtonText("Entfernen");
+        hiddenThreadsPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValues) {
+                Set<String> threadsRemoved = (Set<String>) newValues;
+                Map<Integer, String> threads = Settings.getHiddenThreads();
+                for (String threadTitle : threadsRemoved) {
+                    Integer id = Integer.valueOf(threadTitle.split(";")[0]);
+                    if (threads.remove(id) == null) {
+                        XposedBridge.log(id + " not found in hidden threads prefs! Shouldn't happen!");
+                        Toast.makeText(targetContext, "Fehler! Bitte Xposed-Log an Entwickler schicken.", Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                }
+                Settings.setHiddenThreads(threads);
+
+                return false;
+            }
+        });
+
+        //xpitScreen.addPreference(hiddenThreadsPref);
 
         return xpitScreen;
     }

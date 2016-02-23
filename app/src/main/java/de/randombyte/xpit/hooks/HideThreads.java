@@ -1,17 +1,16 @@
 package de.randombyte.xpit.hooks;
 
-import android.content.SharedPreferences;
+import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.randombyte.xpit.Xpit;
+import de.randombyte.xpit.Settings;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -36,18 +35,20 @@ public class HideThreads {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Object thread = XposedHelpers.getObjectField(param.thisObject, "mThread");
+                final Context currentActivityContext = (Context) param.thisObject;
                 final int id = XposedHelpers.getIntField(thread, "id");
+                final String title = (String) XposedHelpers.getObjectField(thread, "title");
                 Menu menu = (Menu) param.args[0];
                 menu.add(Menu.NONE, Menu.NONE, Menu.NONE, "Thread ausblenden")
                         .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
-                                if (addHiddenThreads(id)) {
-                                    Toast.makeText(Xpit.TARGET_CONTEXT, "Wird demnächst ausgeblndet",
+                                if (!Settings.addHiddenThread(id, title)) {
+                                    Toast.makeText(currentActivityContext, "Wird demnächst ausgeblendet",
                                             Toast.LENGTH_LONG).show();
                                     XposedBridge.log("Aus");
                                 } else {
-                                    Toast.makeText(Xpit.TARGET_CONTEXT, "Schon ausgeblendet",
+                                    Toast.makeText(currentActivityContext, "Schon ausgeblendet",
                                             Toast.LENGTH_LONG).show();
                                     XposedBridge.log("Scho Aus");
                                 }
@@ -63,7 +64,7 @@ public class HideThreads {
                 "retrofit.client.Response", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        List<Integer> hiddenThreadIds = Xpit.getHiddenThreadIds();
+                        Set<Integer> hiddenThreadIds = Settings.getHiddenThreads().keySet(); //Only ids
                         Object[] threads = (Object[]) XposedHelpers.getObjectField(param.args[0], "threads");
                         List filteredThreads = new ArrayList(threads.length);
                         for (Object thread : threads) {
@@ -80,14 +81,5 @@ public class HideThreads {
                                         filteredThreads.size())));
                     }
                 });
-    }
-
-    public boolean addHiddenThreads(int id) {
-        Set<String> hiddenThreads = Xpit.TARGET_PREFS.getStringSet(HIDDEN_THREADS_PREF_KEY, new HashSet<String>());
-        boolean modified = hiddenThreads.add(String.valueOf(id));
-        SharedPreferences.Editor editor = Xpit.TARGET_PREFS.edit();
-        editor.putStringSet(HIDDEN_THREADS_PREF_KEY, hiddenThreads);
-        editor.apply();
-        return modified;
     }
 }

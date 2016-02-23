@@ -34,11 +34,16 @@ public class ShowThanksCount extends ActivatableHook {
                 ViewGroup buttonGroup = (ViewGroup) answerButton.getParent();
                 ViewGroup buttonGroupParent = (ViewGroup) buttonGroup.getParent();
 
+                //Get value
+                int rating1 = XposedHelpers.getIntField(param.thisObject, "rating");
+                int rating2 = XposedHelpers.getIntField(param.thisObject, "numUserRatingsPositive");
+                int rating = rating1 == 0 ? rating2 : rating1;
+
                 //Inflate own layout
                 RelativeLayout relativeLayout = (RelativeLayout) LayoutInflater.from(Xpit.OWN_CONTEXT)
                         .inflate(R.layout.thanks_number_textview, null);
                 TextView textView = (TextView) relativeLayout.findViewById(R.id.thanks_number);
-                textView.setText("Danke: " + XposedHelpers.getIntField(param.thisObject, "rating"));
+                textView.setText("Danke: " + rating);
 
                 //Add Views to new container
                 buttonGroupParent.removeView(buttonGroup);

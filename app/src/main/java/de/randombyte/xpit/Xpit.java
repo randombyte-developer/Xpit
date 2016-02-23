@@ -1,18 +1,14 @@
 package de.randombyte.xpit;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import de.randombyte.xpit.hooks.ActivatableHook;
 import de.randombyte.xpit.hooks.HideSignature;
-import de.randombyte.xpit.hooks.HideThreads;
 import de.randombyte.xpit.hooks.ShowPostIndex;
 import de.randombyte.xpit.hooks.ShowThanksCount;
 import de.randombyte.xpit.hooks.ShowThreadAuthorInfo;
@@ -28,8 +24,6 @@ public class Xpit implements IXposedHookLoadPackage {
 
     public static final String THIS_PACKAGE_NAME = "de.randombyte.xpit";
     public static final String TARGET_PACKAGE_NAME = "de.androidpit.app";
-
-    public static SharedPreferences TARGET_PREFS;
 
     public static Context OWN_CONTEXT;
     public static Context TARGET_CONTEXT;
@@ -52,28 +46,15 @@ public class Xpit implements IXposedHookLoadPackage {
 
         Commons.init(loadPackageParam);
 
-        TARGET_PREFS = PreferenceManager.getDefaultSharedPreferences(TARGET_CONTEXT);
+        Settings.TARGET_PREFS = PreferenceManager.getDefaultSharedPreferences(TARGET_CONTEXT);
         hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount(),
                 new HideSignature()));
         new XpitSettings().init(loadPackageParam, hooks);
-        new HideThreads().init(loadPackageParam);
+        //new HideThreads().init(loadPackageParam);
         for (ActivatableHook hook : hooks) {
             hook.init(loadPackageParam);
-            hook.readEnabled(TARGET_PREFS);
+            hook.readEnabled(Settings.TARGET_PREFS);
         }
     }
 
-    /**
-     * Returns the thread ids that are marked by the user as hidden from the SharedPreferences.
-     */
-    public static List<Integer> getHiddenThreadIds() {
-        Set<String> idsString = Xpit.TARGET_PREFS
-                .getStringSet(HideThreads.HIDDEN_THREADS_PREF_KEY, new HashSet<String>());
-        String[] idsStringArray = idsString.toArray(new String[idsString.size()]);
-        List<Integer> ids = new ArrayList<>(idsStringArray.length);
-        for (String idString : idsStringArray) {
-            ids.add(Integer.valueOf(idString));
-        }
-        return ids;
-    }
 }

@@ -8,8 +8,8 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,49 +69,9 @@ public class XpitSettings {
             xpitScreen.addPreference(checkPref);
         }
 
-        //Hidden threads list
         MultiSelectListPreference hiddenThreadsPref = new MultiSelectListPreference(targetContext);
-        hiddenThreadsPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                MultiSelectListPreference pref = (MultiSelectListPreference) preference;
-                //Prepare for dialog to be shown; doing it here to update values
-                Map<Integer, String> hiddenThreads = Settings.getHiddenThreads();
-                Integer[] ids = hiddenThreads.keySet().toArray(new Integer[hiddenThreads.keySet().size()]);
-                String[] idStrings = new String[ids.length];
-                for (int i = 0; i < idStrings.length; i++) {
-                    idStrings[i] = ids[i].toString();
-                }
-                pref.setEntryValues(idStrings);
-                pref.setEntries(hiddenThreads.values().toArray(new String[hiddenThreads.size()]));
-
-                return true;
-            }
-        });
-        hiddenThreadsPref.setTitle("Ausgeblendete Threads");
-
-        hiddenThreadsPref.setKey(HideThreads.HIDDEN_THREADS_PREF_KEY);
-        hiddenThreadsPref.setPositiveButtonText("Entfernen");
-        hiddenThreadsPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValues) {
-                Set<String> threadsRemoved = (Set<String>) newValues;
-                Map<Integer, String> threads = Settings.getHiddenThreads();
-                for (String threadTitle : threadsRemoved) {
-                    Integer id = Integer.valueOf(threadTitle.split(";")[0]);
-                    if (threads.remove(id) == null) {
-                        XposedBridge.log(id + " not found in hidden threads prefs! Shouldn't happen!");
-                        Toast.makeText(targetContext, "Fehler! Bitte Xposed-Log an Entwickler schicken.", Toast.LENGTH_LONG).show();
-                        return false;
-                    }
-                }
-                Settings.setHiddenThreads(threads);
-
-                return false;
-            }
-        });
-
-        //xpitScreen.addPreference(hiddenThreadsPref);
+        initHiddenThreadsPref(hiddenThreadsPref);
+        xpitScreen.addPreference(hiddenThreadsPref);
 
         return xpitScreen;
     }
@@ -122,5 +82,34 @@ public class XpitSettings {
         checkBoxPref.setKey(key);
         checkBoxPref.setDefaultValue(defaultValue);
         return checkBoxPref;
+    }
+
+    private static void initHiddenThreadsPref(final MultiSelectListPreference pref) {
+        //Get values
+        String[] fullStrings = Settings.getHiddenThreadsString();
+        String[] titles = Settings.getHiddenThreadsTitles();
+
+        XposedBridge.log("EntryValues: " + Arrays.toString(fullStrings));
+        XposedBridge.log("Entries: " + Arrays.toString(titles));
+
+        //Set things up
+        pref.setTitle("Ausgeblendete Threads");
+        pref.setPositiveButtonText("Entfernen");
+        pref.setEntryValues(fullStrings);
+        pref.setEntries(titles);
+        pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValues) {
+                Set<String> threadsRemoved = (Set<String>) newValues;
+                Map<Integer, String> threads = Settings.getHiddenThreads();
+                for (String threadTitle : threadsRemoved) {
+                    threads.remove(Integer.valueOf(threadTitle.split(";")[0]));
+                }
+                Settings.setHiddenThreads(threads);
+                initHiddenThreadsPref(pref); //Reinit to update threads(some might be removed)
+
+                return false;
+            }
+        });
     }
 }

@@ -36,6 +36,11 @@ public class Settings {
         return threads;
     }
 
+    public static String[] getHiddenThreadsTitles() {
+        Map<Integer, String> hiddenThreads = getHiddenThreads();
+        return hiddenThreads.values().toArray(new String[hiddenThreads.size()]);
+    }
+
     public static void setHiddenThreads(Map<Integer, String> threads) {
         Set<String> threadsString = new HashSet<>(threads.size());
         for (Map.Entry<Integer, String> thread : threads.entrySet()) {

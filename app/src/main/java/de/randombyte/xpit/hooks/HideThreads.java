@@ -83,8 +83,8 @@ public class HideThreads {
 
         //Callback for Retrofit
         XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.AbstractThreadListFragment$3",
-                params.classLoader, "success", "de.androidpit.io.model.ForumThreadsResponse",
-                "retrofit.client.Response", new XC_MethodHook() {
+                params.classLoader, "success", Object.class, "retrofit.client.Response",
+                new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         Set<Integer> hiddenThreadIds = Settings.getHiddenThreads().keySet(); //Only ids

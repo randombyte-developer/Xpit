@@ -16,6 +16,9 @@ public class Settings {
 
     public static SharedPreferences TARGET_PREFS;
 
+    /**
+     * Returns the internal representation of the hidden threads in the original order.
+     */
     public static String[] getHiddenThreadsString() {
         Set<String> idsString = TARGET_PREFS
                 .getStringSet(HideThreads.HIDDEN_THREADS_PREF_KEY, new HashSet<String>());
@@ -23,7 +26,20 @@ public class Settings {
     }
 
     /**
+     * Returns only the titles remaining the original order.
+     */
+    public static String[] getHiddenThreadsTitles() {
+        String[] strings = getHiddenThreadsString();
+        String[] titles = new String[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            titles[i] = strings[i].split(";", 2)[1];
+        }
+        return titles;
+    }
+
+    /**
      * Returns the threads that are marked by the user as hidden from the SharedPreferences.
+     * NOTE: The order of course isn't as in the SharedPreferences.
      * @return Returns a map of id and last known title of the threads.
      */
     public static Map<Integer, String> getHiddenThreads() {
@@ -34,11 +50,6 @@ public class Settings {
             threads.put(Integer.valueOf(pair[0]), pair[1]);
         }
         return threads;
-    }
-
-    public static String[] getHiddenThreadsTitles() {
-        Map<Integer, String> hiddenThreads = getHiddenThreads();
-        return hiddenThreads.values().toArray(new String[hiddenThreads.size()]);
     }
 
     public static void setHiddenThreads(Map<Integer, String> threads) {

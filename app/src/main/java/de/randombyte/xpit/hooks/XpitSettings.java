@@ -9,14 +9,12 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import de.randombyte.xpit.Settings;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -89,9 +87,6 @@ public class XpitSettings {
         String[] fullStrings = Settings.getHiddenThreadsString();
         String[] titles = Settings.getHiddenThreadsTitles();
 
-        XposedBridge.log("EntryValues: " + Arrays.toString(fullStrings));
-        XposedBridge.log("Entries: " + Arrays.toString(titles));
-
         //Set things up
         pref.setTitle("Ausgeblendete Threads");
         pref.setPositiveButtonText("Entfernen");
@@ -102,8 +97,8 @@ public class XpitSettings {
             public boolean onPreferenceChange(Preference preference, Object newValues) {
                 Set<String> threadsRemoved = (Set<String>) newValues;
                 Map<Integer, String> threads = Settings.getHiddenThreads();
-                for (String threadTitle : threadsRemoved) {
-                    threads.remove(Integer.valueOf(threadTitle.split(";")[0]));
+                for (String fullString : threadsRemoved) {
+                    threads.remove(Integer.valueOf(fullString.split(";")[0]));
                 }
                 Settings.setHiddenThreads(threads);
                 initHiddenThreadsPref(pref); //Reinit to update threads(some might be removed)

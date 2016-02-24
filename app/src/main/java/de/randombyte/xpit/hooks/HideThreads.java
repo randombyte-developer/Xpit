@@ -27,6 +27,27 @@ public class HideThreads {
 
     public static final String HIDDEN_THREADS_PREF_KEY = "hiddenThreads";
 
+    private static final XC_MethodHook REMOVE_HIDDEN_THREADS_IN_RETROFIT_CALLBACK =  new XC_MethodHook() {
+        @Override
+        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            Set<Integer> hiddenThreadIds = Settings.getHiddenThreads().keySet(); //Only ids
+            Object[] threads = (Object[]) XposedHelpers.getObjectField(param.args[0], "threads");
+            List filteredThreads = new ArrayList(threads.length);
+            for (Object thread : threads) {
+                int id = XposedHelpers.getIntField(thread, "id");
+                if (!hiddenThreadIds.contains(id)) {
+                    filteredThreads.add(thread);
+                } else {
+                    XposedBridge.log("Hiding " + id);
+                }
+            }
+
+            XposedHelpers.setObjectField(param.args[0], "threads", filteredThreads
+                    .toArray((Object[]) Array.newInstance(threads[0].getClass(),
+                            filteredThreads.size())));
+        }
+    };
+
     public HideThreads() {
     }
 
@@ -81,29 +102,12 @@ public class HideThreads {
             }
         });
 
-        //Callback for Retrofit
         XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.AbstractThreadListFragment$3",
                 params.classLoader, "success", Object.class, "retrofit.client.Response",
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Set<Integer> hiddenThreadIds = Settings.getHiddenThreads().keySet(); //Only ids
-                        Object[] threads = (Object[]) XposedHelpers.getObjectField(param.args[0], "threads");
-                        List filteredThreads = new ArrayList(threads.length);
-                        for (Object thread : threads) {
-                            int id = XposedHelpers.getIntField(thread, "id");
-                            if (!hiddenThreadIds.contains(id)) {
-                                filteredThreads.add(thread);
-                            } else {
-                                XposedBridge.log("Hiding " + id);
-                            }
-                        }
+                REMOVE_HIDDEN_THREADS_IN_RETROFIT_CALLBACK);
 
-                        XposedHelpers.setObjectField(param.args[0], "threads", filteredThreads
-                                .toArray((Object[]) Array.newInstance(threads[0].getClass(),
-                                        filteredThreads.size())));
-                    }
-                });
+        XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.ForumBrowserFragment$1", params.classLoader,
+                "success", Object.class, "retrofit.client.Response", REMOVE_HIDDEN_THREADS_IN_RETROFIT_CALLBACK);
     }
 
     private static void addHiddenThread(Object forumThread, Context context) {

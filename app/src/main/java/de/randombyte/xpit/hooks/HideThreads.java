@@ -3,6 +3,8 @@ package de.randombyte.xpit.hooks;
 import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.randombyte.xpit.Settings;
+import de.randombyte.xpit.Xpit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -29,29 +32,49 @@ public class HideThreads {
 
     public void init(final XC_LoadPackage.LoadPackageParam params) {
 
-        //Inflate in options menu
+        //Inflate in options menu in thread list
+        XposedHelpers.findAndHookMethod("android.widget.PopupMenu", params.classLoader,
+                "show", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        PopupMenu popup = (PopupMenu) param.thisObject;
+                        final Context context = (Context) XposedHelpers.getObjectField(popup, "mContext");
+                        if (!context.getPackageName().equals(Xpit.TARGET_PACKAGE_NAME)) {
+                            return;
+                        }
+                        Class itemListenerOfThreadListAdapter = XposedHelpers.findClass(
+                                "de.androidpit.ui.adapters.ForumThreadsArrayAdapter$OverflowMenuItemClickListener",
+                                params.classLoader);
+                        Object listener = XposedHelpers.getObjectField(popup, "mMenuItemClickListener");
+                        if (itemListenerOfThreadListAdapter.isInstance(listener)) {
+                            //Found the correct popup
+                            View anchorView = (View) XposedHelpers.getObjectField(param.thisObject, "mAnchor");
+                            final Object forumThread = anchorView.getTag();
+
+                            popup.getMenu().add("Thread ausblenden").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem item) {
+                                    addHiddenThread(forumThread, context);
+                                    return true;
+                                }
+                            });
+                        }
+                    }
+                });
+
+        //Inflate in options menu in thread activity
         XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.ForumThreadActivity", params.classLoader,
                 "onCreateOptionsMenu", Menu.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Object thread = XposedHelpers.getObjectField(param.thisObject, "mThread");
+                final Object thread = XposedHelpers.getObjectField(param.thisObject, "mThread");
                 final Context currentActivityContext = (Context) param.thisObject;
-                final int id = XposedHelpers.getIntField(thread, "id");
-                final String title = (String) XposedHelpers.getObjectField(thread, "title");
                 Menu menu = (Menu) param.args[0];
                 menu.add(Menu.NONE, Menu.NONE, Menu.NONE, "Thread ausblenden")
                         .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override
                             public boolean onMenuItemClick(MenuItem item) {
-                                if (!Settings.addHiddenThread(id, title)) {
-                                    Toast.makeText(currentActivityContext, "Wird demnächst ausgeblendet",
-                                            Toast.LENGTH_LONG).show();
-                                    XposedBridge.log("Aus");
-                                } else {
-                                    Toast.makeText(currentActivityContext, "Schon ausgeblendet",
-                                            Toast.LENGTH_LONG).show();
-                                    XposedBridge.log("Scho Aus");
-                                }
+                                addHiddenThread(thread, currentActivityContext);
                                 return true;
                             }
                         });
@@ -81,5 +104,15 @@ public class HideThreads {
                                         filteredThreads.size())));
                     }
                 });
+    }
+
+    private static void addHiddenThread(Object forumThread, Context context) {
+        int id = XposedHelpers.getIntField(forumThread, "id");
+        String title = (String) XposedHelpers.getObjectField(forumThread, "title");
+        if (!Settings.addHiddenThread(id, title)) {
+            Toast.makeText(context, "Wird demnächst ausgeblendet", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(context, "Schon ausgeblendet", Toast.LENGTH_LONG).show();
+        }
     }
 }

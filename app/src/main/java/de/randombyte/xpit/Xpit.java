@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.randombyte.xpit.hooks.ActivatableHook;
+import de.randombyte.xpit.hooks.AlwaysLoadRecentPosts;
 import de.randombyte.xpit.hooks.HideSignature;
 import de.randombyte.xpit.hooks.HideThreads;
 import de.randombyte.xpit.hooks.ShowPostIndex;
@@ -51,7 +52,8 @@ public class Xpit implements IXposedHookLoadPackage {
         hooks.addAll(Arrays.asList(new ShowThreadAuthorInfo(), new ShowPostIndex(), new ShowThanksCount(),
                 new HideSignature()));
         new XpitSettings().init(loadPackageParam, hooks);
-        new HideThreads().init(loadPackageParam);
+        HideThreads.init(loadPackageParam);
+        AlwaysLoadRecentPosts.init(loadPackageParam);
         for (ActivatableHook hook : hooks) {
             hook.init(loadPackageParam);
             hook.readEnabled(Settings.TARGET_PREFS);

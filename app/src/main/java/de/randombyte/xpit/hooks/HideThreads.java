@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import de.randombyte.xpit.Commons;
 import de.randombyte.xpit.Settings;
 import de.randombyte.xpit.Xpit;
 import de.robv.android.xposed.XC_MethodHook;
@@ -48,10 +49,7 @@ public class HideThreads {
         }
     };
 
-    public HideThreads() {
-    }
-
-    public void init(final XC_LoadPackage.LoadPackageParam params) {
+    public static void init(final XC_LoadPackage.LoadPackageParam params) {
 
         //Inflate in options menu in thread list
         XposedHelpers.findAndHookMethod("android.widget.PopupMenu", params.classLoader,
@@ -102,8 +100,7 @@ public class HideThreads {
             }
         });
 
-        XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.AbstractThreadListFragment$3",
-                params.classLoader, "success", Object.class, "retrofit.client.Response",
+        XposedBridge.hookMethod(Commons.abstractThreadList_retrofitSuccess,
                 REMOVE_HIDDEN_THREADS_IN_RETROFIT_CALLBACK);
 
         XposedHelpers.findAndHookMethod("de.androidpit.ui.forum.ForumBrowserFragment$1", params.classLoader,

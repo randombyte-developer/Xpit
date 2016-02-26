@@ -7,7 +7,7 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
- * Let the app always load recent posts
+ * Let the app always load recent posts.
  */
 public class AlwaysLoadRecentPosts {
 

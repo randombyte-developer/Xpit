@@ -2,6 +2,7 @@ package de.randombyte.xpit.hooks;
 
 import android.content.Context;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -71,6 +72,10 @@ public class XpitSettings {
         initHiddenThreadsPref(hiddenThreadsPref);
         xpitScreen.addPreference(hiddenThreadsPref);
 
+/*        ListPreference loadThreadsPref = new ListPreference(targetContext);
+        initLoadThreadsPref(loadThreadsPref);
+        xpitScreen.addPreference(loadThreadsPref);*/
+
         return xpitScreen;
     }
 
@@ -106,5 +111,12 @@ public class XpitSettings {
                 return false;
             }
         });
+    }
+
+    private static void initLoadThreadsPref(ListPreference pref) {
+        pref.setTitle("Gleichzeitig geladene Threads");
+        pref.setEntries(new String[] {"10", "20(Standard)", "40", "50"});
+        pref.setEntryValues(new String[] {"10", "20", "40", "50"});
+        pref.setKey(LoadThreadsAmount.PREF_KEY);
     }
 }

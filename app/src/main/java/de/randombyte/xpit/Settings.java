@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import de.randombyte.xpit.hooks.HideThreads;
+import de.randombyte.xpit.hooks.LoadThreadsAmount;
 
 /**
  * Helper class for managing the settings.
@@ -71,5 +72,9 @@ public class Settings {
         boolean modified = hiddenThreads.put(id, title) != null;
         setHiddenThreads(hiddenThreads);
         return modified;
+    }
+
+    public static String getLoadThreadsAmount() {
+        return TARGET_PREFS.getString(LoadThreadsAmount.PREF_KEY, "20");
     }
 }
